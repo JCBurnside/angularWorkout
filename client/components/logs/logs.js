@@ -1,0 +1,55 @@
+(()=>{
+	angular.module('workoutlog.logs',[
+		'ui.router'
+	])
+	.config(logsConfig);
+	logsConfig.$inject=['$stateProvider'];
+	function logsConfig($stateProvider) {
+		$stateProvider
+			.state('logs',{
+				url:'/logs',
+				templateUrl:'/components/logs/logs.html',
+				controller:LogsController,
+				controllerAs:'ctrl',
+				bindToController:this,
+				resolve:{
+					getUserDefinitions:[
+						'DefineService',
+						DefineService=>DefineService.fetch()
+					]
+				}
+			})
+			.state('logs/update',{
+				url:'/logs/:id',
+				templateUrl:'/componenets/logs/log-update.html',
+				controller:LogsController,
+				controllerAs:'ctrl',
+				bindToController:this,
+				resolve:{
+					getSingleLog:($stateParams,LogsService)=>LogsService.fetchOne($stateParams.id),
+					getUserDefinitions:DefineService=>DefineService.fetch()
+				}
+			});
+	}
+	LogsController.$inject=['$state','DefineService','LogsService'];
+	function LogsController($state,DefineService,LogsService) {
+		var vm=this;
+		vm.saved=false;
+		vm.log={};
+		vm.userDefinitions=DefineService.getDefinitions();
+		vm.updateLog=LogsService.getLog();
+		vm.save=()=>LogsService.save(vm.log).then(()=>{
+			vm.saved=true;
+			$state.go('history');
+		});
+		vm.updateSingleLog=()=>{
+			var logToUpdate={
+				id:vm.updateLog.id,
+				desc:vm.updateLog.description,
+				result:vm.updateLog.result,
+				def:vm.updateLog.def
+			}
+			LogsService.updateLog(logToUpdate).then(()=>$state.go('history'));
+		};
+	}
+})();

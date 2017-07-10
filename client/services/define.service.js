@@ -14,6 +14,6 @@
 			ds.fetch=definition=>{
 				return http.get(API_BASE+'definition').then(res=>{ds.userDefinitions=res.data;});
 			}
-			ds.getDifinitions=()=>ds.userDefinitions;
+			ds.getDefinitions=()=>ds.userDefinitions;
 		}
 })();

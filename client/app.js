@@ -3,7 +3,8 @@
 		'ui.router',
 		'workoutlog.auth.signin',
 		'workoutlog.auth.signup',
-		'workoutlog.define']);
+		'workoutlog.define',
+		'workoutlog.logs']);
 	function config($urlRouterProvider){
 		$urlRouterProvider.otherwise('/signin');
 	}
