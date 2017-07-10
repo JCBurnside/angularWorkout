@@ -1,7 +1,7 @@
 (()=>{
 	var app=angular.module('workoutlog',[
 		'ui.router',
-		// 'workoutlog.auth.signin',
+		'workoutlog.auth.signin',
 		'workoutlog.auth.signup']);
 	function config($urlRouterProvider){
 		$urlRouterProvider.otherwise('/signin');
@@ -10,9 +10,35 @@
 	app.config(config);
 	app.constant('API_BASE','//localhost:3000/api/');
 })();
-(()=>{
 
+(()=>{
+	angular
+		.module('workoutlog.auth.signin',['ui.router'])
+		.config(signinConfig);
+	function signinConfig(stateProvider) {
+		stateProvider
+			.state('signin',{
+				url:'/signin',
+				templateUrl:'/components/auth/signin.html',
+				controller:SigninController,
+				controllerAs:'ctrl',
+				bindToController:this
+			});
+	}
+	signinConfig.$inject=['$stateProvider'];
+	function SigninController($state,UsersService){
+		var vm=this;
+		vm.user={};
+		vm.login=()=>{
+			UsersService.login(vm.user).then(res=>{
+				console.log(res);
+				$state.go('define');
+			});
+		};
+	}
+	SigninController.$inject=['$state','UsersService'];	
 })();
+
 (()=>{
 	angular
 		.module('workoutlog.auth.signup',['ui.router'])
@@ -42,7 +68,6 @@
 		}
 		SignUpController.$inject=['$state','UsersService'];
 })();
-
 
 
 
