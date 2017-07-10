@@ -1,0 +1,15 @@
+<div class="container">
+	<h2>Define</h2>
+	<p>{{ctrl.message}}</p>
+	<label for="def-desc">Description</label>
+	<textarea class="form-control" ng-model="ctrl.definition.desc" id="def-desc" rows="3"></textarea>
+	<label for="def-log">Log work by</label>
+	<select class="form-control" id="def-log" ng-model="ctrl.definition.type">
+		<option>Time</option>
+		<option>Weight</option>
+		<option>Reps</option>
+	</select>
+	<p ng-show="ctrl.saved">You created a new category</p>
+	<br/>
+	<button id="def-save" ng-click="ctrl.save()" class="btn btn-primary">save</button>
+</div>

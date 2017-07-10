@@ -2,7 +2,8 @@
 	var app=angular.module('workoutlog',[
 		'ui.router',
 		'workoutlog.auth.signin',
-		'workoutlog.auth.signup']);
+		'workoutlog.auth.signup',
+		'workoutlog.define']);
 	function config($urlRouterProvider){
 		$urlRouterProvider.otherwise('/signin');
 	}
@@ -10,7 +11,6 @@
 	app.config(config);
 	app.constant('API_BASE','//localhost:3000/api/');
 })();
-
 (()=>{
 	angular
 		.module('workoutlog.auth.signin',['ui.router'])
@@ -69,6 +69,42 @@
 		SignUpController.$inject=['$state','UsersService'];
 })();
 
+(()=>{
+	angular.module('workoutlog.define',[
+		'ui.router'
+	])
+	.config(defineConfig);
+	function defineConfig(stateProvider){
+		stateProvider.state('define',{
+			url:'/define',
+			templateUrl:'/components/define/define.html',
+			controller:DefineController,
+			controllerAs:'ctrl',
+			bindToController:this,
+			resolve:[
+				'CurrentUser','$q','$state',
+				function(CurrentUser,$q,$state){
+					var deferred=$q.defer();
+					if(CurrentUser.isSignedIn())deferred.resolve();
+					else {
+						deferred.reject();
+						$state.go('signin');
+					}
+					return deferred.promise;
+				}]
+		});
+	}
+	defineConfig.$inject=['$stateProvider'];
+
+	function DefineController($state,DefineService){
+		var vm=this;
+		vm.message="Define a workout category here";
+		vm.saved=false;
+		vm.definition={};
+		vm.save=()=>DefineService.save(vm.definition).then(()=>{vm.saved=true;$state.go('logs');});
+	}
+	DefineController.$inject=['$state','DefineService'];
+})();
 
 
 (()=>{
@@ -115,7 +151,25 @@
 			return new CurrentUser();
 		}]);
 })();
-
+(()=>{
+	angular
+		.module('workoutlog')
+		.service('DefineService',DefineService);
+		DefineService.$inject=['$http','API_BASE'];
+		function DefineService(http,API_BASE){
+			var ds=this;
+			ds.userDefinitions=[];
+			ds.save=function(definition){
+				return http.post(API_BASE+'definition',{
+					definition:definition
+				}).then(res=>ds.userDefinitions.unshift(res.data));
+			};
+			ds.fetch=definition=>{
+				return http.get(API_BASE+'definition').then(res=>{ds.userDefinitions=res.data;});
+			}
+			ds.getDifinitions=()=>ds.userDefinitions;
+		}
+})();
 
 (function(){
 	angular.module('workoutlog')
