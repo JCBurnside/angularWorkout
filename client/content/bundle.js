@@ -13,98 +13,6 @@
 	app.constant('API_BASE','//localhost:3000/api/');
 })();
 (()=>{
-	angular.module('workoutlog.define',[
-		'ui.router'
-	])
-	.config(defineConfig);
-	function defineConfig(stateProvider){
-		stateProvider.state('define',{
-			url:'/define',
-			templateUrl:'/components/define/define.html',
-			controller:DefineController,
-			controllerAs:'ctrl',
-			bindToController:this,
-			resolve:[
-				'CurrentUser','$q','$state',
-				function(CurrentUser,$q,$state){
-					var deferred=$q.defer();
-					if(CurrentUser.isSignedIn())deferred.resolve();
-					else {
-						deferred.reject();
-						$state.go('signin');
-					}
-					return deferred.promise;
-				}]
-		});
-	}
-	defineConfig.$inject=['$stateProvider'];
-
-	function DefineController($state,DefineService){
-		var vm=this;
-		vm.message="Define a workout category here";
-		vm.saved=false;
-		vm.definition={};
-		vm.save=()=>DefineService.save(vm.definition).then(()=>{vm.saved=true;$state.go('logs');});
-	}
-	DefineController.$inject=['$state','DefineService'];
-})();
-
-(()=>{
-	angular.module('workoutlog.logs',[
-		'ui.router'
-	])
-	.config(logsConfig);
-	logsConfig.$inject=['$stateProvider'];
-	function logsConfig($stateProvider) {
-		$stateProvider
-			.state('logs',{
-				url:'/logs',
-				templateUrl:'/components/logs/logs.html',
-				controller:LogsController,
-				controllerAs:'ctrl',
-				bindToController:this,
-				resolve:{
-					getUserDefinitions:[
-						'DefineService',
-						DefineService=>DefineService.fetch()
-					]
-				}
-			})
-			.state('logs/update',{
-				url:'/logs/:id',
-				templateUrl:'/componenets/logs/log-update.html',
-				controller:LogsController,
-				controllerAs:'ctrl',
-				bindToController:this,
-				resolve:{
-					getSingleLog:($stateParams,LogsService)=>LogsService.fetchOne($stateParams.id),
-					getUserDefinitions:DefineService=>DefineService.fetch()
-				}
-			});
-	}
-	LogsController.$inject=['$state','DefineService','LogsService'];
-	function LogsController($state,DefineService,LogsService) {
-		var vm=this;
-		vm.saved=false;
-		vm.log={};
-		vm.userDefinitions=DefineService.getDefinitions();
-		vm.updateLog=LogsService.getLog();
-		vm.save=()=>LogsService.save(vm.log).then(()=>{
-			vm.saved=true;
-			$state.go('history');
-		});
-		vm.updateSingleLog=()=>{
-			var logToUpdate={
-				id:vm.updateLog.id,
-				desc:vm.updateLog.description,
-				result:vm.updateLog.result,
-				def:vm.updateLog.def
-			}
-			LogsService.updateLog(logToUpdate).then(()=>$state.go('history'));
-		};
-	}
-})();
-(()=>{
 	angular
 		.module('workoutlog.auth.signin',['ui.router'])
 		.config(signinConfig);
@@ -162,6 +70,107 @@
 		SignUpController.$inject=['$state','UsersService'];
 })();
 
+(()=>{
+	angular.module('workoutlog.history',[
+		'ui.router'
+	])
+	.config(historyConfig);
+	historyConfig.$inject=['$stateProvider'];
+	function historyConfig($stateProvider){
+		
+	}
+})();
+(()=>{
+	angular.module('workoutlog.define',[
+		'ui.router'
+	])
+	.config(defineConfig);
+	function defineConfig(stateProvider){
+		stateProvider.state('define',{
+			url:'/define',
+			templateUrl:'/components/define/define.html',
+			controller:DefineController,
+			controllerAs:'ctrl',
+			bindToController:this,
+			resolve:[
+				'CurrentUser','$q','$state',
+				function(CurrentUser,$q,$state){
+					var deferred=$q.defer();
+					if(CurrentUser.isSignedIn())deferred.resolve();
+					else {
+						deferred.reject();
+						$state.go('signin');
+					}
+					return deferred.promise;
+				}]
+		});
+	}
+	defineConfig.$inject=['$stateProvider'];
+
+	function DefineController($state,DefineService){
+		var vm=this;
+		vm.message="Define a workout category here";
+		vm.saved=false;
+		vm.definition={};
+		vm.save=()=>DefineService.save(vm.definition).then(()=>{vm.saved=true;$state.go('logs');});
+	}
+	DefineController.$inject=['$state','DefineService'];
+})();
+(()=>{
+	angular.module('workoutlog.logs',[
+		'ui.router'
+	])
+	.config(logsConfig);
+	logsConfig.$inject=['$stateProvider'];
+	function logsConfig($stateProvider) {
+		$stateProvider
+			.state('logs',{
+				url:'/logs',
+				templateUrl:'/components/logs/logs.html',
+				controller:LogsController,
+				controllerAs:'ctrl',
+				bindToController:this,
+				resolve:{
+					getUserDefinitions:[
+						'DefineService',
+						DefineService=>DefineService.fetch()
+					]
+				}
+			})
+			.state('logs/update',{
+				url:'/logs/:id',
+				templateUrl:'/componenets/logs/log-update.html',
+				controller:LogsController,
+				controllerAs:'ctrl',
+				bindToController:this,
+				resolve:{
+					getSingleLog:($stateParams,LogsService)=>LogsService.fetchOne($stateParams.id),
+					getUserDefinitions:DefineService=>DefineService.fetch()
+				}
+			});
+	}
+	LogsController.$inject=['$state','DefineService','LogsService'];
+	function LogsController($state,DefineService,LogsService) {
+		var vm=this;
+		vm.saved=false;
+		vm.log={};
+		vm.userDefinitions=DefineService.getDefinitions();
+		vm.updateLog=LogsService.getLog();
+		vm.save=()=>LogsService.save(vm.log).then(()=>{
+			vm.saved=true;
+			$state.go('history');
+		});
+		vm.updateSingleLog=()=>{
+			var logToUpdate={
+				id:vm.updateLog.id,
+				desc:vm.updateLog.description,
+				result:vm.updateLog.result,
+				def:vm.updateLog.def
+			}
+			LogsService.updateLog(logToUpdate).then(()=>$state.go('history'));
+		};
+	}
+})();
 (()=>{
 	angular.module('workoutlog')
 		.factory('AuthInterceptor',['SessionToken','API_BASE',
