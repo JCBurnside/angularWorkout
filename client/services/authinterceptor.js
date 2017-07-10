@@ -6,7 +6,7 @@
 					request:function(config){
 						var token=SessionToken.get();
 						if(token&&config.url.indexOf(API_BASE)>-1){
-							config.headers['Authoriztion']=token;
+							config.headers['Authorization']=token;
 						}
 						return config
 					}

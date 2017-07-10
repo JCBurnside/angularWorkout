@@ -19,5 +19,6 @@
 			CurrentUser.prototype.isSignedIn = function() {
 				return !!this.get().id;
 			};
+			return new CurrentUser();
 		}]);
 })();

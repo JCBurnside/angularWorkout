@@ -8,7 +8,7 @@
 	}
 	config.$inject=['$urlRouterProvider'];
 	app.config(config);
-	app.constant('API_BASE','//localhost:3000/api');
+	app.constant('API_BASE','//localhost:3000/api/');
 })();
 (()=>{
 
@@ -33,6 +33,7 @@
 			vm.user={};
 			vm.message="Sign up for an account!";
 			vm.submit=function(){
+				console.log(vm.user);
 				UsersService.create(vm.user).then(function(res){
 					console.log(res);
 					$state.go('define');
@@ -53,7 +54,7 @@
 					request:function(config){
 						var token=SessionToken.get();
 						if(token&&config.url.indexOf(API_BASE)>-1){
-							config.headers['Authoriztion']=token;
+							config.headers['Authorization']=token;
 						}
 						return config
 					}
@@ -86,6 +87,7 @@
 			CurrentUser.prototype.isSignedIn = function() {
 				return !!this.get().id;
 			};
+			return new CurrentUser();
 		}]);
 })();
 
@@ -112,14 +114,14 @@
 })();
 (function(){
 	angular.module('workoutlog')
-		.service('UserSevice',[
+		.service('UsersService',[
 			'$http','API_BASE','SessionToken','CurrentUser',
-			function(http,API_BASE,SessionToken,CurrentUser){
+			function($http,API_BASE,SessionToken,CurrentUser){
 				function UsersService(){
 
 				}
 				UsersService.prototype.create = function(user) {
-					var userPromise=http.post(API_BASE+'user',{
+					var userPromise=$http.post(API_BASE+'user',{
 						user:user
 					});
 					userPromise.then(function(res){
@@ -129,7 +131,7 @@
 					return userPromise;
 				};
 				UsersService.prototype.login = function(user) {
-					var loginPromise=http.post(API_BASE+'login',{
+					var loginPromise=$http.post(API_BASE+'login',{
 						user:user
 					});
 					loginPromise.then(function(res){

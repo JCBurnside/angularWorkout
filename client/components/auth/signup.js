@@ -18,6 +18,7 @@
 			vm.user={};
 			vm.message="Sign up for an account!";
 			vm.submit=function(){
+				console.log(vm.user);
 				UsersService.create(vm.user).then(function(res){
 					console.log(res);
 					$state.go('define');

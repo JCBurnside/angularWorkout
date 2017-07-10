@@ -1,13 +1,13 @@
 (function(){
 	angular.module('workoutlog')
-		.service('UserSevice',[
+		.service('UsersService',[
 			'$http','API_BASE','SessionToken','CurrentUser',
-			function(http,API_BASE,SessionToken,CurrentUser){
+			function($http,API_BASE,SessionToken,CurrentUser){
 				function UsersService(){
 
 				}
 				UsersService.prototype.create = function(user) {
-					var userPromise=http.post(API_BASE+'user',{
+					var userPromise=$http.post(API_BASE+'user',{
 						user:user
 					});
 					userPromise.then(function(res){
@@ -17,7 +17,7 @@
 					return userPromise;
 				};
 				UsersService.prototype.login = function(user) {
-					var loginPromise=http.post(API_BASE+'login',{
+					var loginPromise=$http.post(API_BASE+'login',{
 						user:user
 					});
 					loginPromise.then(function(res){
