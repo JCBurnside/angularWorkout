@@ -5,7 +5,7 @@ var router=require('express').Router(),
 	Definition=sequilize.import('../models/definition');
 router.post('/',(req,res)=>{
 	Log.create({
-		description:req.body.log.desc,
+		desc:req.body.log.desc,
 		result:req.body.log.result,
 		owner:req.user.id,
 		def:req.body.log.def
@@ -27,7 +27,7 @@ router.put('/',(req,res)=>{
 		result=req.body.log.result,
 		data=req.body.log.id,
 		def=req.body.log.def;
-	log.update({
+	Log.update({
 		description:desc,
 		result:result,
 		def:def

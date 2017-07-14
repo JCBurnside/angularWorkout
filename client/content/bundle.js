@@ -4,13 +4,50 @@
 		'workoutlog.auth.signin',
 		'workoutlog.auth.signup',
 		'workoutlog.define',
-		'workoutlog.logs']);
+		'workoutlog.logs',
+		'workoutlog.history']);
 	function config($urlRouterProvider){
 		$urlRouterProvider.otherwise('/signin');
 	}
 	config.$inject=['$urlRouterProvider'];
 	app.config(config);
 	app.constant('API_BASE','//localhost:3000/api/');
+})();
+(()=>{
+	angular.module('workoutlog.define',[
+		'ui.router'
+	])
+	.config(defineConfig);
+	function defineConfig(stateProvider){
+		stateProvider.state('define',{
+			url:'/define',
+			templateUrl:'/components/define/define.html',
+			controller:DefineController,
+			controllerAs:'ctrl',
+			bindToController:this,
+			resolve:[
+				'CurrentUser','$q','$state',
+				function(CurrentUser,$q,$state){
+					var deferred=$q.defer();
+					if(CurrentUser.isSignedIn())deferred.resolve();
+					else {
+						deferred.reject();
+						$state.go('signin');
+					}
+					return deferred.promise;
+				}]
+		});
+	}
+	defineConfig.$inject=['$stateProvider'];
+
+	function DefineController($state,DefineService){
+		var vm=this;
+		vm.message="Define a workout category here";
+		vm.saved=false;
+		vm.definition={};
+		vm.save=()=>DefineService.save(vm.definition).then(()=>{vm.saved=true;$state.go('logs');});
+	}
+	DefineController.$inject=['$state','DefineService'];
 })();
 (()=>{
 	angular
@@ -69,52 +106,29 @@
 		}
 		SignUpController.$inject=['$state','UsersService'];
 })();
-
-(()=>{
-	angular.module('workoutlog.history',[
-		'ui.router'
-	])
-	.config(historyConfig);
-	historyConfig.$inject=['$stateProvider'];
-	function historyConfig($stateProvider){
-		
-	}
-})();
-(()=>{
-	angular.module('workoutlog.define',[
-		'ui.router'
-	])
-	.config(defineConfig);
-	function defineConfig(stateProvider){
-		stateProvider.state('define',{
-			url:'/define',
-			templateUrl:'/components/define/define.html',
-			controller:DefineController,
-			controllerAs:'ctrl',
-			bindToController:this,
-			resolve:[
-				'CurrentUser','$q','$state',
-				function(CurrentUser,$q,$state){
-					var deferred=$q.defer();
-					if(CurrentUser.isSignedIn())deferred.resolve();
-					else {
-						deferred.reject();
-						$state.go('signin');
-					}
-					return deferred.promise;
-				}]
-		});
-	}
-	defineConfig.$inject=['$stateProvider'];
-
-	function DefineController($state,DefineService){
-		var vm=this;
-		vm.message="Define a workout category here";
-		vm.saved=false;
-		vm.definition={};
-		vm.save=()=>DefineService.save(vm.definition).then(()=>{vm.saved=true;$state.go('logs');});
-	}
-	DefineController.$inject=['$state','DefineService'];
+(function(){
+	angular.module('workoutlog')
+	.directive('userlinks',
+		function() {
+			UserLinksController.$inject=['$state','CurrentUser','SessionToken'];
+			function UserLinksController($state,CurrentUser,SessionToken) {
+				var vm=this;
+				vm.user=()=>CurrentUser.get();
+				vm.signedIn=()=>!!(vm.user().id);
+				vm.logout=()=>{
+					CurrentUser.clear();
+					SessionToken.clear();
+					$state.go('signin');
+				}
+			}
+			return {
+				scope:{},
+				controller:UserLinksController,
+				controllerAs:'ctrl',
+				bindToController:true,
+				templateUrl:'/components/auth/userlinks.html'
+			}
+		})
 })();
 (()=>{
 	angular.module('workoutlog.logs',[
@@ -139,7 +153,7 @@
 			})
 			.state('logs/update',{
 				url:'/logs/:id',
-				templateUrl:'/componenets/logs/log-update.html',
+				templateUrl:'/components/logs/log-update.html',
 				controller:LogsController,
 				controllerAs:'ctrl',
 				bindToController:this,
@@ -157,6 +171,7 @@
 		vm.userDefinitions=DefineService.getDefinitions();
 		vm.updateLog=LogsService.getLog();
 		vm.save=()=>LogsService.save(vm.log).then(()=>{
+			console.log(vm.log)
 			vm.saved=true;
 			$state.go('history');
 		});
@@ -169,6 +184,44 @@
 			}
 			LogsService.updateLog(logToUpdate).then(()=>$state.go('history'));
 		};
+	}
+})();
+(()=>{
+	angular.module('workoutlog.history',[
+		'ui.router'
+	])
+	.config(historyConfig);
+	historyConfig.$inject=['$stateProvider'];
+	function historyConfig($stateProvider){
+		$stateProvider
+			.state('history',{
+				url:'/history',
+				templateUrl:'/components/history/history.html',
+				controller:HistoryController,
+				controllerAs:'ctrl',
+				bindToController:this,
+				resolve:{
+					getUserLogs:[
+						'LogsService',
+						function(LogsService){
+							return LogsService.fetch();
+						}
+					]
+				}
+			});
+	}
+	HistoryController.$inject=['$state','LogsService'];
+	function HistoryController($state,LogsService) {
+		var vm=this;
+		vm.history=LogsService.getLogs();
+		console.log(vm.history);
+		vm.delete=function(item) {
+			LogsService.deleteLogs(item);
+		}
+
+		vm.updateLog=function(item){
+			$state.go('logs/update',{'id':item.id})
+		}
 	}
 })();
 (()=>{
@@ -243,8 +296,11 @@
 		logsService.workouts=[];
 		logsService.individualLog={};
 
+		logsService.fetch=function(){
+			return $http.get(API_BASE+'log').then(res=>logsService.workouts=res.data)
+		};
 		logsService.save=log=>$http.post(API_BASE+'log',{log:log}).then(data=>logsService.workouts.push(data));
-		logsService.getLogs=()=>$http.get(API_BASE+'log').then(res=>logsService.workouts=res.data);
+		logsService.getLogs=function(){ return $http.get(API_BASE+'log').then(res=>logsService.workouts=res.data);};
 		logsService.deleteLogs=log=>{
 			var logIndex=logsService.workouts.indexOf(log);
 			logsService.workouts.splice(logIndex,1);

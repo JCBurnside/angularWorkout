@@ -28,6 +28,7 @@ module.exports = function(mongoose){
       username: username,
       password: bcrypt.hashSync(password, 10)
     });
+    console.log(User,user)
     user.save(registerCallback);
     console.log('Save command was sent');
   }

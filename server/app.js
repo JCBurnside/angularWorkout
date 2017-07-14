@@ -2,18 +2,18 @@ require('dotenv').config()
 var express=require('express'),
 	app=express(),
 	bodyParser=require('body-parser'),
-	sequelize=require('./db.js'),
+	// sequelize=require('./db.js'),
 	mongoose=require('mongoose'),
 	mongo=require('./db_mongo.js'),
 	account=require('./models/mongoUser.js')(mongoose);
-// mongoose.connect(mongo.databaseUrl);
-// mongoose.connection.on('connected',()=>{
-// 	console.log("CONNECTED TO MONGO SERVER");
-// })
+mongoose.connect(mongo.databaseUrl);
+mongoose.connection.on('connected',()=>{
+	console.log("CONNECTED TO MONGO SERVER");
+})
 
 
 // var User=sequelize.import('./models/user');
-sequelize.sync();
+// sequelize.sync();
 // User.sync({force:true}); //Used to force drop a table
 app.use(bodyParser.json());
 app.get('/api/test',(req,res)=>res.send("HELLO"))
@@ -26,7 +26,7 @@ app.get('/api/test',(req,res)=>res.send("HELLO"))
 // })
 app.use(require('./middleware/headers'));
 app.use(require('./middleware/validate_session'));
-app.use('/api/user',require('./routes/user.js'));
+app.use('/api/user',require('./routes/user.js')(account));
 app.use('/api/login',require('./routes/session.js'));
 app.use('/api/definition',require('./routes/definition.js'));
 app.use('/api/log',require('./routes/log.js'));

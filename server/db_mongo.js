@@ -1,4 +1,4 @@
 module.exports={
-	databaseUrl:'mongodb://localhost:27017/test-mongo',
-	sercer:'yoursecert'
+	databaseUrl:'mongodb://localhost:27017/workout-mongo',
+	secret:'yoursecert'
 }

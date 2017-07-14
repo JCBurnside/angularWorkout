@@ -7,8 +7,11 @@
 		logsService.workouts=[];
 		logsService.individualLog={};
 
+		logsService.fetch=function(){
+			return $http.get(API_BASE+'log').then(res=>logsService.workouts=res.data)
+		};
 		logsService.save=log=>$http.post(API_BASE+'log',{log:log}).then(data=>logsService.workouts.push(data));
-		logsService.getLogs=()=>$http.get(API_BASE+'log').then(res=>logsService.workouts=res.data);
+		logsService.getLogs=function(){ return $http.get(API_BASE+'log').then(res=>logsService.workouts=res.data);};
 		logsService.deleteLogs=log=>{
 			var logIndex=logsService.workouts.indexOf(log);
 			logsService.workouts.splice(logIndex,1);

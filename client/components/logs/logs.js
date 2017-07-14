@@ -21,7 +21,7 @@
 			})
 			.state('logs/update',{
 				url:'/logs/:id',
-				templateUrl:'/componenets/logs/log-update.html',
+				templateUrl:'/components/logs/log-update.html',
 				controller:LogsController,
 				controllerAs:'ctrl',
 				bindToController:this,
@@ -39,6 +39,7 @@
 		vm.userDefinitions=DefineService.getDefinitions();
 		vm.updateLog=LogsService.getLog();
 		vm.save=()=>LogsService.save(vm.log).then(()=>{
+			console.log(vm.log)
 			vm.saved=true;
 			$state.go('history');
 		});
